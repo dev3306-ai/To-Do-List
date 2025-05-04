@@ -1,86 +1,102 @@
-import React, { useState } from 'react'
-import './App.css'
+import React, { useState } from "react";
+import "./ToDoList.css";
 
-function ToDoList(){
+function ToDoList() {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editedTask, setEditedTask] = useState("");
 
-    const [tasks, setTasks] = useState([]);
-    const [newTask, setNewTask] = useState("");
+  const addTask = () => {
+    if (newTask.trim() === "") return;
+    setTasks([...tasks, { id: Date.now(), text: newTask }]);
+    setNewTask("");
+  };
 
-    function handleInputChange(event){
-        setNewTask(event.target.value);
-    }
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
-    function addTask(){
-        if(newTask.trim() !== ""){
-            setTasks(t => [...t, newTask]);
-            setNewTask("");
-        }
-    }
+  const editTask = (id) => {
+    const taskToEdit = tasks.find((task) => task.id === id);
+    setEditingTaskId(id);
+    setEditedTask(taskToEdit.text);
+  };
 
-    function deleteTask(index){
-        const updatedTasks = tasks.filter((_, i) => i !== index);
-        setTasks(updatedTasks);
-    }
+  const saveEditedTask = () => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === editingTaskId ? { ...task, text: editedTask } : task
+      )
+    );
+    setEditingTaskId(null);
+    setEditedTask("");
+  };
 
-    function moveTaskUp(index){
+  const filteredTasks = tasks.filter((task) =>
+    task.text.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-        if(index > 0){
-            const updatedTasks = [...tasks];
-            [updatedTasks[index], updatedTasks[index - 1]] = 
-            [updatedTasks[index - 1], updatedTasks[index]];
-            setTasks(updatedTasks);
-        }
-    }
-
-    function moveTaskDown(index){
-
-        if(index < tasks.length - 1){
-            const updatedTasks = [...tasks];
-            [updatedTasks[index], updatedTasks[index + 1]] = 
-            [updatedTasks[index + 1], updatedTasks[index]];
-            setTasks(updatedTasks);
-        }
-    }
-
-    return(
-    <div className="to-do-list">
-
-        <h1>To-Do-List</h1>
-
-        <div>
-            <input
-                type="text"
-                placeholder="Enter a task..."
-                value={newTask}
-                onChange={handleInputChange}/>
-            <button
-                className="add-button"
-                onClick={addTask}>
-                Add
-            </button>
-        </div>
-        <ol>
-            {tasks.map((task, index) => 
-                <li key={index}>
-                    <span className="text">{task}</span>
-                    <button
-                        className="delete-button"
-                        onClick={() => deleteTask(index)}>
-                        Delete
-                    </button>
-                    <button
-                        className="move-button"
-                        onClick={() => moveTaskUp(index)}>
-                        ☝
-                    </button>
-                    <button
-                        className="move-button"
-                        onClick={() => moveTaskDown(index)}>
-                        👇
-                    </button>
-                </li>
+  return (
+    <div className="todo-container">
+      <h1 className="todo-title">To-Do List</h1>
+      <div className="todo-controls">
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="todo-search"
+        />
+        <input
+          type="text"
+          placeholder="Add a new task..."
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          className="todo-input"
+        />
+        <button onClick={addTask} className="todo-add-btn">
+          Add
+        </button>
+      </div>
+      <ul className="todo-list">
+        {filteredTasks.map((task) => (
+          <li key={task.id} className="todo-item">
+            {editingTaskId === task.id ? (
+              <>
+                <input
+                  type="text"
+                  value={editedTask}
+                  onChange={(e) => setEditedTask(e.target.value)}
+                  className="todo-edit-input"
+                />
+                <button onClick={saveEditedTask} className="todo-save-btn">
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="todo-text">{task.text}</span>
+                <button
+                  onClick={() => editTask(task.id)}
+                  className="todo-edit-btn"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteTask(task.id)}
+                  className="todo-delete-btn"
+                >
+                  Delete
+                </button>
+              </>
             )}
-        </ol>
-    </div>);
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
-export default ToDoList
+
+export default ToDoList;
